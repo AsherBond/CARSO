@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ──────────────────────────────────────────────────────────────────────────────
+#  Copyright (c) 2024 Emanuele Ballarin <emanuele@ballarin.cc>
+#  Released under the terms of the MIT License
+#  (see: https://url.ballarin.cc/mitlicense)
+# ──────────────────────────────────────────────────────────────────────────────
 import argparse
 from typing import Tuple
 
@@ -147,9 +151,7 @@ def main_run(args: argparse.Namespace) -> None:
     adversarial_classifier: WideResNet = WideResNet(
         100, bn_momentum=0.01, mean=CIFAR100_MEAN, std=CIFAR100_STD
     )
-    adversarial_classifier.load_state_dict(
-        th.load("../models/cifar100_a5_b12_t4_50m_w.pt")
-    )
+    load_model(adversarial_classifier, "../models/cifar100_a5_b12_t4_50m_w.safetensors")
     adversarial_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (

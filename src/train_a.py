@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ──────────────────────────────────────────────────────────────────────────────
+#  Copyright (c) 2024 Emanuele Ballarin <emanuele@ballarin.cc>
+#  Released under the terms of the MIT License
+#  (see: https://url.ballarin.cc/mitlicense)
+# ──────────────────────────────────────────────────────────────────────────────
 import argparse
 from typing import Tuple
 
@@ -20,6 +24,7 @@ from ebtorch.optim import Lookahead
 from ebtorch.optim import make_beta_scheduler
 from ebtorch.optim import ralah_optim
 from ebtorch.optim import warmed_up_linneal
+from safetensors.torch import load_model
 from safetensors.torch import save_model
 from tooling.attacks import attacks_dispatcher
 from torch import nn
@@ -171,7 +176,7 @@ def main_run(args: argparse.Namespace) -> None:
     vanilla_classifier: WideResNet = WideResNet(
         10, bn_momentum=0.01, mean=CIFAR10_MEAN, std=CIFAR10_STD
     )
-    vanilla_classifier.load_state_dict(th.load("../models/cifar10_a3_b10_t4_20m_w.pt"))
+    load_model(vanilla_classifier, "../models/cifar10_a3_b10_t4_20m_w.safetensors")
     vanilla_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (
