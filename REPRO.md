@@ -44,7 +44,7 @@ The training phase further requires access to adversarially pre-trained model we
 cd models; bash get_models_train.sh
 ```
 
-that it is assumed to have been manually run before starting the training itself. The weights are provided in *Pickle-based* PyTorch weights format, as offered by their original Authors.
+that it is assumed to have been manually run before starting the training itself. The weights are provided in *Huggingface `safetensors`* format, converted from those originally offered by their original Authors (in *Pickle-based* PyTorch weights format).
 
 
 To reproduce the evaluation phase directly, without the need for model training, we provide the pre-trained weights for all required (sub)models. Those can be equivalently obtained by reproducing the training phase beforehand. Such pre-trained weights can also be obtained from the same online storage bucket as:
