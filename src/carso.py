@@ -19,11 +19,11 @@ from typing import Union
 import torch as th
 from ebtorch.nn import DuplexLinearNeck
 from ebtorch.nn import GaussianReparameterizerSampler
-from ebtorch.nn import lexsemble
 from ebtorch.nn.utils import gather_model_repr
 from ebtorch.nn.utils import model_reqgrad_
 from ebtorch.nn.utils import tensor_module_matched_apply
 from safe_assert import safe_assert as sassert
+from tooling.aggregation import select_aggregation
 from tooling.modelpieces import classif_decode_ens
 from tooling.modelpieces import make_decoder_cifar
 from tooling.modelpieces import make_decoder_tiny
@@ -53,6 +53,7 @@ class CARSOWrap(nn.Module):
         joint_latent_dim: int,
         ensemble_size: int,
         differentiable_infer: bool = False,
+        agg_method: str = "peel",
     ) -> None:
 
         # Validate arguments
@@ -63,6 +64,7 @@ class CARSOWrap(nn.Module):
         sassert(compr_cond_dim > 0, "Compressed representation size must be positive")
         sassert(joint_latent_dim > 0, "Compressed joint size must be positive")
         sassert(ensemble_size >= 0, "Ensemble size must be positive (0: deterministic)")
+        sassert(agg_method in ("logit", "prob", "peel"), "Invalid aggregation method")
 
         super().__init__()
 
@@ -157,6 +159,7 @@ class CARSOWrap(nn.Module):
         # Inference setup
         self.infer_sampler = th.zeros if ensemble_size == 0 else th.randn
         ensemble_size = max(1, ensemble_size)
+        self.agg: str = agg_method
         # ──────────────────────────────────────────────────────────────────────
         self.repr_layers = repr_layers
         self.di = differentiable_infer
@@ -252,4 +255,4 @@ class CARSOWrap(nn.Module):
             out: Tensor = classif_decode_ens(
                 self.wrapped_model_final, self.decoder, samples, latent_c
             )
-            return lexsemble(out)
+            return select_aggregation(method=self.agg)(out)
