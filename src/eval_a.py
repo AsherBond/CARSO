@@ -87,6 +87,13 @@ def main_parse() -> argparse.Namespace:
         metavar="<n_samples>",
         help="Number of sampled recosntructions to classify (default: 8)",
     )
+    parser.add_argument(
+        "--agg",
+        type=str,
+        default="peel",
+        metavar="<aggregation_method>",
+        help="Aggregation method for model outputs (default: PeeL)",
+    )
     return parser.parse_args()
 
 
@@ -196,6 +203,7 @@ def main_run(args: argparse.Namespace) -> None:
         joint_latent_dim=JOINT_LATENT_DIM,
         ensemble_size=args.nsamples,
         differentiable_infer=args.e2e,
+        agg_method=args.agg,
     )
 
     # noinspection DuplicatedCode
