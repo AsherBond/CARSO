@@ -238,21 +238,21 @@ class CARSOWrap(nn.Module):
                 else:
                     stack.enter_context(th.no_grad())
                     x = x.detach()
-            # ──────────────────────────────────────────────────────────────────
-            _, repr_list = gather_model_repr(
-                self.wrapped_model, x, self.repr_layers, preserve_graph=self.di
-            )
-            del _
+                # ──────────────────────────────────────────────────────────────
+                _, repr_list = gather_model_repr(
+                    self.wrapped_model, x, self.repr_layers, preserve_graph=self.di
+                )
+                del _
 
-            repr_list: List[Tensor] = tensor_module_matched_apply(
-                repr_list, self.repr_compressors
-            )
-            latent_c: Tensor = self.repr_fcn_compressor(repr_list)
-            # ──────────────────────────────────────────────────────────────────────
-            samples = self.infer_sampler(
-                (x.shape[0], self.jld, self.ensize), device=x.device
-            )
-            out: Tensor = classif_decode_ens(
-                self.wrapped_model_final, self.decoder, samples, latent_c
-            )
-            return select_aggregation(method=self.agg)(out)
+                repr_list: List[Tensor] = tensor_module_matched_apply(
+                    repr_list, self.repr_compressors
+                )
+                latent_c: Tensor = self.repr_fcn_compressor(repr_list)
+                # ──────────────────────────────────────────────────────────────
+                samples = self.infer_sampler(
+                    (x.shape[0], self.jld, self.ensize), device=x.device
+                )
+                out: Tensor = classif_decode_ens(
+                    self.wrapped_model_final, self.decoder, samples, latent_c
+                )
+                return select_aggregation(method=self.agg)(out)

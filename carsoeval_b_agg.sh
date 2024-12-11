@@ -5,8 +5,8 @@
 #SBATCH --time=0-12:00:00
 #SBATCH --nodes=1                   # Nodes
 #SBATCH --ntasks-per-node=7         # GPUs per node
-#SBATCH --cpus-per-task=24          # Cores per node / GPUs per node
-#SBATCH --mem=256G                  # 4 * Cores per node
+#SBATCH --cpus-per-task=4          # Cores per node / GPUs per node
+#SBATCH --mem=96G                  # 4 * Cores per node
 #SBATCH --gres=gpu:7                # GPUs per node
 ################################################################################
 #
