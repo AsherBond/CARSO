@@ -37,9 +37,13 @@ SINGLE_GPU_WORKERS: int = 16
 LR_INIT: float = 1e-5
 LR_STEADY: float = 0.2
 LR_FINAL: float = 5e-4
-
+EP_INIT: int = 10
+EP_STEADY: int = 10
+EP_FINAL: int = 80
 
 # ──────────────────────────────────────────────────────────────────────────────
+
+
 def main_parse() -> argparse.Namespace:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=f"Training {MODEL_NAME} on {DATASET_NAME}*"
@@ -71,9 +75,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=200,
+        default=EP_INIT + EP_STEADY + EP_FINAL,
         metavar="<epochs>",
-        help="Number of epochs to train for (default: 200)",
+        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_FINAL})",
     )
     parser.add_argument(
         "--batchsize",
@@ -204,7 +208,7 @@ def main_run(args: argparse.Namespace) -> None:
 
     # LR scheduler instantiation
     optimizer, scheduler = warmed_up_annealer(
-        optimizer, LR_INIT, LR_STEADY, LR_FINAL, 3, 1, args.epochs - 4
+        optimizer, LR_INIT, LR_STEADY, LR_FINAL, EP_INIT, EP_STEADY, EP_FINAL
     )
 
     # Wandb initialization
@@ -219,6 +223,9 @@ def main_run(args: argparse.Namespace) -> None:
                 "lr_init": LR_INIT,
                 "lr_steady": LR_STEADY,
                 "lr_final": LR_FINAL,
+                "ep_init": EP_INIT,
+                "ep_steady": EP_STEADY,
+                "ep_final": EP_FINAL,
             },
         )
 
