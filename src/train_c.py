@@ -34,9 +34,6 @@ from torch.utils.data.distributed import DistributedSampler
 from tqdm.auto import tqdm
 from tqdm.auto import trange
 
-wandb.require("core")
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 BASE_MODEL_NAME: str = "wrn_28_10"
 DATASET_NAME: str = "tinyimagenet_200"

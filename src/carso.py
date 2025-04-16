@@ -64,7 +64,10 @@ class CARSOWrap(nn.Module):
         sassert(compr_cond_dim > 0, "Compressed representation size must be positive")
         sassert(joint_latent_dim > 0, "Compressed joint size must be positive")
         sassert(ensemble_size >= 0, "Ensemble size must be positive (0: deterministic)")
-        sassert(agg_method in ("logit", "prob", "peel"), "Invalid aggregation method")
+        sassert(
+            agg_method in ("logit", "prob", "peel", "count"),
+            "Invalid aggregation method",
+        )
 
         super().__init__()
 

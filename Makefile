@@ -1,12 +1,13 @@
 .PHONY: clean
 clean:
-	rm -R -f .mypy_cache
+	rm -R -f ./.mypy_cache
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete -o -type d -name .mypy_cache -delete
 
 .PHONY: format
 format:
-	find . -type f -name '*.py' -exec reorder-python-imports --py311-plus "{}" \;
+	find . -type f -name '*.py' -exec reorder-python-imports --py310-plus "{}" \;
 	black "$(realpath .)"
+	sort-requirements "$(realpath .)/requirements.txt"
 
 .PHONY: deployhooks
 deployhooks:

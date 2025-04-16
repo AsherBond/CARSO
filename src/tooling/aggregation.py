@@ -17,6 +17,10 @@ __all__: List[str] = ["select_aggregation"]
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+def _count_aggregation(x: Tensor) -> Tensor:
+    return x.floor_divide(x.max(-2, keepdim=True)[0]).sum(-1)
+
+
 def _logit_aggregation(x: Tensor) -> Tensor:
     return x.mean(dim=-1)
 
@@ -31,7 +35,9 @@ def _peel_aggregation(x: Tensor) -> Tensor:
 
 
 def select_aggregation(method: str) -> Callable[[Tensor], Tensor]:
-    if method == "logit":
+    if method == "count":
+        return _count_aggregation
+    elif method == "logit":
         return _logit_aggregation
     elif method == "prob":
         return _probability_aggregation
