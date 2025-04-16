@@ -34,9 +34,9 @@ from tqdm.auto import trange
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
 SINGLE_GPU_WORKERS: int = 16
-LR_INIT: float = 5e-4
-LR_STEADY: float = 0.1
-LR_FINAL: float = 0.001
+LR_INIT: float = 1e-5
+LR_STEADY: float = 0.2
+LR_FINAL: float = 5e-4
 
 
 # ──────────────────────────────────────────────────────────────────────────────
