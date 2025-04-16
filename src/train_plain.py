@@ -229,6 +229,9 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     unsc_loss: Tensor = th.tensor(0.0, device=device)
     for eidx in trange(args.epochs, desc="Training epoch", disable=(local_rank != 0)):
+
+        scheduler.step()
+
         if args.dist:
             train_dl.sampler.set_epoch(eidx)  # type: ignore
 
@@ -248,8 +251,6 @@ def main_run(args: argparse.Namespace) -> None:
             loss = unsc_loss * world_size  # DDP averages .grad, compute sum!
             loss.backward()
             optimizer.step()
-
-        scheduler.step()
 
         # Evaluation
         testacc: float = eval_model_on_test(
