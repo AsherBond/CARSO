@@ -214,7 +214,7 @@ def main_run(args: argparse.Namespace) -> None:
     # Wandb initialization
     if args.wandb and local_rank == 0:
         wandb.init(
-            project="...",
+            project="semigood-baselines",
             config={
                 "model": MODEL_NAME,
                 "dataset": args.dataset,

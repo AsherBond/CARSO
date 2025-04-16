@@ -42,7 +42,7 @@ echo " "
 echo "START TIME "$(date +'%Y_%m_%d-%H_%M_%S')
 echo " "
 echo "-----------------------------------------------------------------------------------------------------------------"
-srun "$MYPYTHON" -O "$CODEHOME/train_plain.py" --save --dataset cifarhundred
+srun "$MYPYTHON" -O "$CODEHOME/train_plain.py" --save --wandb --tgnotif --dataset cifarhundred
 echo "-----------------------------------------------------------------------------------------------------------------"
 echo " "
 echo "STOP TIME "$(date +'%Y_%m_%d-%H_%M_%S')
