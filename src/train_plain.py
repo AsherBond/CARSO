@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # ──────────────────────────────────────────────────────────────────────────────
 import argparse
-from math import pow as mpow
 from typing import Tuple
 
 import torch as th
@@ -20,12 +19,12 @@ from ebtorch.nn.architectures_resnets_dm import CIFAR10_MEAN
 from ebtorch.nn.architectures_resnets_dm import CIFAR10_STD
 from ebtorch.nn.utils import eval_model_on_test
 from ebtorch.nn.utils import TelegramBotEcho as TBE
+from ebtorch.optim import warmed_up_annealer
 from safetensors.torch import save_model
 from torch import Tensor
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import Optimizer
 from torch.optim import SGD
-from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data.distributed import DistributedSampler
 from tqdm.auto import tqdm
 from tqdm.auto import trange
@@ -34,8 +33,10 @@ from tqdm.auto import trange
 # ──────────────────────────────────────────────────────────────────────────────
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
-REF_LR: float = 2e-3
 SINGLE_GPU_WORKERS: int = 16
+LR_INIT: float = 5e-4
+LR_STEADY: float = 0.1
+LR_FINAL: float = 0.001
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -194,7 +195,7 @@ def main_run(args: argparse.Namespace) -> None:
     # Optimizer instantiation
     optimizer: Optimizer = SGD(
         params=model.parameters(),
-        lr=REF_LR,
+        lr=LR_STEADY,
         momentum=0.9,
         weight_decay=5e-4,
         nesterov=True,
@@ -202,15 +203,9 @@ def main_run(args: argparse.Namespace) -> None:
     )
 
     # LR scheduler instantiation
-    scheduler = LambdaLR(
-        optimizer,
-        lr_lambda=(
-            lambda epoch: mpow(
-                0.275,
-                3 if epoch > 160 else 2 if epoch > 120 else 1 if epoch > 60 else 0,
-            )
-        ),
-    )  # NOSONAR
+    optimizer, scheduler = warmed_up_annealer(
+        optimizer, LR_INIT, LR_STEADY, LR_FINAL, 3, 1, args.epochs - 4
+    )
 
     # Wandb initialization
     if args.wandb and local_rank == 0:
@@ -221,7 +216,9 @@ def main_run(args: argparse.Namespace) -> None:
                 "dataset": args.dataset,
                 "batch_size": batchsize * world_size,
                 "epochs": args.epochs,
-                "ref_lr": REF_LR,
+                "lr_init": LR_INIT,
+                "lr_steady": LR_STEADY,
+                "lr_final": LR_FINAL,
             },
         )
 
