@@ -34,7 +34,7 @@ from tqdm.auto import trange
 # ──────────────────────────────────────────────────────────────────────────────
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
-REF_LR: float = 0.008
+REF_LR: float = 2e-3
 SINGLE_GPU_WORKERS: int = 16
 
 
@@ -206,7 +206,8 @@ def main_run(args: argparse.Namespace) -> None:
         optimizer,
         lr_lambda=(
             lambda epoch: mpow(
-                0.25, 3 if epoch > 160 else 2 if epoch > 120 else 1 if epoch > 60 else 0
+                0.275,
+                3 if epoch > 160 else 2 if epoch > 120 else 1 if epoch > 60 else 0,
             )
         ),
     )  # NOSONAR
