@@ -248,10 +248,8 @@ def main_run(args: argparse.Namespace) -> None:
             loss = unsc_loss * world_size  # DDP averages .grad, compute sum!
             loss.backward()
             optimizer.step()
-            try:
-                scheduler.step()
-            except ValueError:
-                pass
+
+        scheduler.step()
 
         # Evaluation
         testacc: float = eval_model_on_test(
