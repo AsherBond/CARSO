@@ -34,7 +34,7 @@ from tqdm.auto import trange
 # ──────────────────────────────────────────────────────────────────────────────
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
-REF_LR: float = 0.1
+REF_LR: float = 0.02
 SINGLE_GPU_WORKERS: int = 16
 
 
@@ -206,7 +206,7 @@ def main_run(args: argparse.Namespace) -> None:
         optimizer,
         lr_lambda=(
             lambda epoch: mpow(
-                0.2, 3 if epoch > 160 else 2 if epoch > 120 else 1 if epoch > 60 else 0
+                0.3, 3 if epoch > 160 else 2 if epoch > 120 else 1 if epoch > 60 else 0
             )
         ),
     )  # NOSONAR
@@ -230,8 +230,6 @@ def main_run(args: argparse.Namespace) -> None:
     unsc_loss: Tensor = th.tensor(0.0, device=device)
     for eidx in trange(args.epochs, desc="Training epoch", disable=(local_rank != 0)):
 
-        scheduler.step()
-
         if args.dist:
             train_dl.sampler.set_epoch(eidx)  # type: ignore
 
@@ -251,6 +249,8 @@ def main_run(args: argparse.Namespace) -> None:
             loss = unsc_loss * world_size  # DDP averages .grad, compute sum!
             loss.backward()
             optimizer.step()
+
+        scheduler.step()
 
         # Evaluation
         testacc: float = eval_model_on_test(
