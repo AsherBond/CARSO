@@ -146,6 +146,7 @@ def main_run(args: argparse.Namespace) -> None:
         batch_size_test=4 * batchsize,
         cuda_accel=(device == th.device("cuda") or args.dist),
         unshuffle_train=args.dist,
+        augment_train=True,
         dataloader_kwargs=(
             {"num_workers": cpus_per_task, "persistent_workers": True}
             if not args.dist
@@ -159,6 +160,7 @@ def main_run(args: argparse.Namespace) -> None:
             batch_size_test=1,
             cuda_accel=True,
             unshuffle_train=True,
+            augment_train=True,
             dataloader_kwargs={
                 "sampler": DistributedSampler(train_dl.dataset),
                 "num_workers": cpus_per_task,
