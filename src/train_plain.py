@@ -35,11 +35,11 @@ MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
 SINGLE_GPU_WORKERS: int = 16
 LR_INIT: float = 1e-5
-LR_STEADY: float = 0.2
+LR_STEADY: float = 0.0275
 LR_FINAL: float = 5e-4
-EP_INIT: int = 10
-EP_STEADY: int = 10
-EP_FINAL: int = 80
+EP_INIT: int = 20
+EP_STEADY: int = 20
+EP_FINAL: int = 60
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -210,7 +210,14 @@ def main_run(args: argparse.Namespace) -> None:
 
     # LR scheduler instantiation
     optimizer, scheduler = warmed_up_annealer(
-        optimizer, LR_INIT, LR_STEADY, LR_FINAL, EP_INIT, EP_STEADY, EP_FINAL
+        optimizer,
+        LR_INIT,
+        LR_STEADY,
+        LR_FINAL,
+        EP_INIT,
+        EP_STEADY,
+        EP_FINAL,
+        cos_annealing=True,
     )
 
     # Wandb initialization
