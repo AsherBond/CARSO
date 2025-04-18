@@ -21,6 +21,7 @@ from ebtorch.nn.utils import BestModelSaver
 from ebtorch.nn.utils import eval_model_on_test
 from ebtorch.nn.utils import TelegramBotEcho as TBE
 from ebtorch.optim import warmed_up_annealer
+from torch import nn
 from torch import Tensor
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import Optimizer
@@ -182,7 +183,11 @@ def main_run(args: argparse.Namespace) -> None:
 
     # Model instantiation
     model: nn.Module = (
-        WideResNet(num_classes=nclasses, mean=datamean, std=datastd).to(device).train()
+        WideResNet(
+            num_classes=nclasses, mean=datamean, std=datastd, activation_fn=nn.ReLU
+        )
+        .to(device)
+        .train()
     )
     if args.dist:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
