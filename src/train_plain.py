@@ -17,10 +17,10 @@ from ebtorch.nn.architectures_resnets_dm import CIFAR100_MEAN
 from ebtorch.nn.architectures_resnets_dm import CIFAR100_STD
 from ebtorch.nn.architectures_resnets_dm import CIFAR10_MEAN
 from ebtorch.nn.architectures_resnets_dm import CIFAR10_STD
+from ebtorch.nn.utils import BestModelSaver
 from ebtorch.nn.utils import eval_model_on_test
 from ebtorch.nn.utils import TelegramBotEcho as TBE
 from ebtorch.optim import warmed_up_annealer
-from safetensors.torch import save_model
 from torch import Tensor
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import Optimizer
@@ -38,8 +38,8 @@ LR_INIT: float = 5e-6
 LR_STEADY: float = 0.0275
 LR_FINAL: float = 5e-5
 EP_INIT: int = 40
-EP_STEADY: int = 40
-EP_FINAL: int = 120
+EP_STEADY: int = 30
+EP_FINAL: int = 60
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -241,6 +241,9 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     # TRAINING LOOP
     # ──────────────────────────────────────────────────────────────────────────
+    if args.save and local_rank == 0:
+        modelsaver: BestModelSaver = BestModelSaver(name=f"{MODEL_NAME}_{args.dataset}")
+
     unsc_loss: Tensor = th.tensor(0.0, device=device)
     for eidx in trange(args.epochs, desc="Training epoch", disable=(local_rank != 0)):
 
@@ -295,14 +298,11 @@ def main_run(args: argparse.Namespace) -> None:
                     },
                     step=eidx,
                 )
-    # ──────────────────────────────────────────────────────────────────────────
-    # Model saving
-    if args.save and local_rank == 0:
-        save_model(
-            model.module if args.dist else model,
-            f"{MODEL_NAME}_{args.dataset}.safetensors",
-        )
-
+                if args.save:
+                    # noinspection PyUnboundLocalVariable
+                    _ = modelsaver(
+                        model.module if args.dist else model, wandb_acc.item()
+                    )
     # ──────────────────────────────────────────────────────────────────────────
     if args.wandb and local_rank == 0:
         wandb.finish()
@@ -314,7 +314,11 @@ def main_run(args: argparse.Namespace) -> None:
         # noinspection PyUnboundLocalVariable
         facc = wandb_acc.item() if args.wandb else "N.A."
         # noinspection PyUnboundLocalVariable
-        ebdltgb.send(f"Training ended ({args.dataset})!\nFinal accuracy:{facc}")
+        bacc = modelsaver.best_metric if args.save else "N.A."
+        # noinspection PyUnboundLocalVariable
+        ebdltgb.send(
+            f"Training ended ({args.dataset})!\nFinal accuracy:{facc}\nBest accuracy:{bacc}"
+        )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
