@@ -254,7 +254,9 @@ def main_run(args: argparse.Namespace) -> None:
     # TRAINING LOOP
     # ──────────────────────────────────────────────────────────────────────────
     if args.save and local_rank == 0:
-        modelsaver: BestModelSaver = BestModelSaver(name=f"{MODEL_NAME}_{args.dataset}")
+        modelsaver: BestModelSaver = BestModelSaver(
+            name=f"{MODEL_NAME}_{args.dataset}", from_epoch=20
+        )
 
     unsc_loss: Tensor = th.tensor(0.0, device=device)
     for eidx in trange(args.epochs, desc="Training epoch", disable=(local_rank != 0)):
