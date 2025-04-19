@@ -37,14 +37,15 @@ SINGLE_GPU_WORKERS: int = 16
 
 LR_INIT: float = 5e-6
 LR_STEADY: float = 0.0275
-LR_QUENCH: float = 2e-3
+LR_QUENCH: float = LR_STEADY / 10
 LR_FINAL: float = 5e-5
 
-EP_INIT: int = 40
-EP_STEADY: int = 30
-EP_ANN1: int = 45
-EP_QUENCH: int = 10
-EP_ANN2: int = 15
+EP_INIT: int = 45
+EP_STEADY: int = 10
+EP_ANN1: int = 50
+EP_QUENCH: int = 5
+EP_ANN2: int = 10
+EP_FINAL: int = 5
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -80,9 +81,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2,
+        default=EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2 + EP_FINAL,
         metavar="<epochs>",
-        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2})",
+        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2 + EP_FINAL})",
     )
     parser.add_argument(
         "--batchsize",
@@ -216,12 +217,13 @@ def main_run(args: argparse.Namespace) -> None:
     # LR scheduler instantiation
     scheduler = MultiPhaseScheduler(
         optim=optimizer,
-        init_lrs=LR_INIT,
-        final_lrs=LR_FINAL,
+        init_lr=LR_INIT,
+        final_lr=LR_FINAL,
         warmup_steps=EP_INIT,
-        steady_lrs=[LR_STEADY, LR_QUENCH],
+        steady_lr=[LR_STEADY, LR_QUENCH],
         steady_steps=[EP_STEADY, EP_QUENCH],
         anneal_steps=[EP_ANN1, EP_ANN2],
+        cos_warmup=False,
         cos_annealing=True,
     )
 
@@ -244,6 +246,7 @@ def main_run(args: argparse.Namespace) -> None:
                 "ep_quench": EP_QUENCH,
                 "ep_anneal1": EP_ANN1,
                 "ep_anneal2": EP_ANN2,
+                "ep_final": EP_FINAL,
             },
         )
 
