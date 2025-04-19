@@ -6,7 +6,6 @@ from typing import Tuple
 
 import torch as th
 import torch.distributed as dist
-import torch.nn as nn
 import torch.nn.functional as F
 import wandb
 from ebtorch.data import cifarhundred_dataloader_dispatcher
@@ -20,7 +19,7 @@ from ebtorch.nn.architectures_resnets_dm import CIFAR10_STD
 from ebtorch.nn.utils import BestModelSaver
 from ebtorch.nn.utils import eval_model_on_test
 from ebtorch.nn.utils import TelegramBotEcho as TBE
-from ebtorch.optim import warmed_up_annealer
+from ebtorch.optim import MultiPhaseScheduler
 from torch import nn
 from torch import Tensor
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -35,12 +34,17 @@ from tqdm.auto import trange
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
 SINGLE_GPU_WORKERS: int = 16
+
 LR_INIT: float = 5e-6
 LR_STEADY: float = 0.0275
+LR_QUENCH: float = 2e-3
 LR_FINAL: float = 5e-5
+
 EP_INIT: int = 40
 EP_STEADY: int = 30
-EP_FINAL: int = 60
+EP_ANN1: int = 45
+EP_QUENCH: int = 10
+EP_ANN2: int = 15
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -76,9 +80,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=EP_INIT + EP_STEADY + EP_FINAL,
+        default=EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2,
         metavar="<epochs>",
-        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_FINAL})",
+        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2})",
     )
     parser.add_argument(
         "--batchsize",
@@ -183,11 +187,7 @@ def main_run(args: argparse.Namespace) -> None:
 
     # Model instantiation
     model: nn.Module = (
-        WideResNet(
-            num_classes=nclasses, mean=datamean, std=datastd, activation_fn=nn.ReLU
-        )
-        .to(device)
-        .train()
+        WideResNet(num_classes=nclasses, mean=datamean, std=datastd).to(device).train()
     )
     if args.dist:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
@@ -214,14 +214,14 @@ def main_run(args: argparse.Namespace) -> None:
     )
 
     # LR scheduler instantiation
-    optimizer, scheduler = warmed_up_annealer(
-        optimizer,
-        LR_INIT,
-        LR_STEADY,
-        LR_FINAL,
-        EP_INIT,
-        EP_STEADY,
-        EP_FINAL,
+    scheduler = MultiPhaseScheduler(
+        optim=optimizer,
+        init_lrs=LR_INIT,
+        final_lrs=LR_FINAL,
+        warmup_steps=EP_INIT,
+        steady_lrs=[LR_STEADY, LR_QUENCH],
+        steady_steps=[EP_STEADY, EP_QUENCH],
+        anneal_steps=[EP_ANN1, EP_ANN2],
         cos_annealing=True,
     )
 
@@ -232,14 +232,18 @@ def main_run(args: argparse.Namespace) -> None:
             config={
                 "model": MODEL_NAME,
                 "dataset": args.dataset,
+                "nclasses": nclasses,
                 "batch_size": batchsize * world_size,
                 "epochs": args.epochs,
                 "lr_init": LR_INIT,
                 "lr_steady": LR_STEADY,
+                "lr_quench": LR_QUENCH,
                 "lr_final": LR_FINAL,
                 "ep_init": EP_INIT,
                 "ep_steady": EP_STEADY,
-                "ep_final": EP_FINAL,
+                "ep_quench": EP_QUENCH,
+                "ep_anneal1": EP_ANN1,
+                "ep_anneal2": EP_ANN2,
             },
         )
 
