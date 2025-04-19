@@ -315,7 +315,7 @@ def main_run(args: argparse.Namespace) -> None:
                 if args.save:
                     # noinspection PyUnboundLocalVariable
                     _ = modelsaver(
-                        model.module if args.dist else model, wandb_acc.item()
+                        model.module if args.dist else model, wandb_acc.item(), eidx
                     )
     # ──────────────────────────────────────────────────────────────────────────
     if args.wandb and local_rank == 0:
