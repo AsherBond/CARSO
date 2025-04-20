@@ -37,15 +37,11 @@ SINGLE_GPU_WORKERS: int = 16
 
 LR_INIT: float = 5e-6
 LR_STEADY: float = 0.0275
-LR_QUENCH: float = LR_STEADY / 10
-LR_FINAL: float = 5e-5
+LR_FINAL: float = 1e-5
 
-EP_INIT: int = 45
-EP_STEADY: int = 10
-EP_ANN1: int = 50
-EP_QUENCH: int = 5
-EP_ANN2: int = 10
-EP_FINAL: int = 5
+EP_INIT: int = 40
+EP_STEADY: int = 15
+EP_ANN: int = 145
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -81,9 +77,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2 + EP_FINAL,
+        default=EP_INIT + EP_STEADY + EP_ANN,
         metavar="<epochs>",
-        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_QUENCH + EP_ANN1 + EP_ANN2 + EP_FINAL})",
+        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_ANN})",
     )
     parser.add_argument(
         "--batchsize",
@@ -220,9 +216,9 @@ def main_run(args: argparse.Namespace) -> None:
         init_lr=LR_INIT,
         final_lr=LR_FINAL,
         warmup_steps=EP_INIT,
-        steady_lr=[LR_STEADY, LR_QUENCH],
-        steady_steps=[EP_STEADY, EP_QUENCH],
-        anneal_steps=[EP_ANN1, EP_ANN2],
+        steady_lr=LR_STEADY,
+        steady_steps=EP_STEADY,
+        anneal_steps=EP_ANN,
         cos_warmup=False,
         cos_annealing=True,
     )
@@ -238,15 +234,11 @@ def main_run(args: argparse.Namespace) -> None:
                 "batch_size": batchsize * world_size,
                 "epochs": args.epochs,
                 "lr_init": LR_INIT,
-                "lr_steady": LR_STEADY,
-                "lr_quench": LR_QUENCH,
                 "lr_final": LR_FINAL,
+                "lr_steady": LR_STEADY,
                 "ep_init": EP_INIT,
                 "ep_steady": EP_STEADY,
-                "ep_quench": EP_QUENCH,
-                "ep_anneal1": EP_ANN1,
-                "ep_anneal2": EP_ANN2,
-                "ep_final": EP_FINAL,
+                "ep_anneal": EP_ANN,
             },
         )
 
@@ -255,7 +247,7 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     if args.save and local_rank == 0:
         modelsaver: BestModelSaver = BestModelSaver(
-            name=f"{MODEL_NAME}_{args.dataset}", from_epoch=20
+            name=f"{MODEL_NAME}_{args.dataset}", from_epoch=20, path="../checkpoints"
         )
 
     unsc_loss: Tensor = th.tensor(0.0, device=device)
@@ -315,7 +307,9 @@ def main_run(args: argparse.Namespace) -> None:
                 if args.save:
                     # noinspection PyUnboundLocalVariable
                     _ = modelsaver(
-                        model.module if args.dist else model, wandb_acc.item(), eidx
+                        model.module if args.dist else model,
+                        wandb_acc.item(),
+                        eidx,
                     )
     # ──────────────────────────────────────────────────────────────────────────
     if args.wandb and local_rank == 0:
