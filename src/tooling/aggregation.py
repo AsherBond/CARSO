@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ──────────────────────────────────────────────────────────────────────────────
-#  Copyright (c) 2024 Emanuele Ballarin <emanuele@ballarin.cc>
+#  Copyright (c) 2025 Emanuele Ballarin <emanuele@ballarin.cc>
 #  Released under the terms of the MIT License
 #  (see: https://url.ballarin.cc/mitlicense)
 # ──────────────────────────────────────────────────────────────────────────────
@@ -18,7 +18,8 @@ __all__: List[str] = ["select_aggregation"]
 
 
 def _count_aggregation(x: Tensor) -> Tensor:
-    return x.floor_divide(x.max(-2, keepdim=True)[0]).sum(-1)
+    # return x.floor_divide(x.max(-2, keepdim=True)[0]).sum(-1)
+    return th.floor(th.divide(x, x.max(-2, keepdim=True)[0])).sum(-1)
 
 
 def _logit_aggregation(x: Tensor) -> Tensor:

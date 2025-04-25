@@ -12,13 +12,13 @@ import torch as th
 import torch.distributed as dist
 import wandb
 from carso import CARSOWrap
-from ebtorch.data import cifarten_dataloader_dispatcher
+from ebtorch.data import cifarhundred_dataloader_dispatcher
 from ebtorch.data import data_prep_dispatcher_3ch
 from ebtorch.distributed import slurm_nccl_env
 from ebtorch.nn import beta_reco_bce_splitout
 from ebtorch.nn import WideResNet
-from ebtorch.nn.architectures_resnets_dm import CIFAR10_MEAN
-from ebtorch.nn.architectures_resnets_dm import CIFAR10_STD
+from ebtorch.nn.architectures_resnets_dm import CIFAR100_MEAN
+from ebtorch.nn.architectures_resnets_dm import CIFAR100_STD
 from ebtorch.nn.utils import AdverApply
 from ebtorch.optim import Lookahead
 from ebtorch.optim import make_beta_scheduler
@@ -36,9 +36,9 @@ from tqdm.auto import trange
 
 # ──────────────────────────────────────────────────────────────────────────────
 BASE_MODEL_NAME: str = "wrn_28_10"
-DATASET_NAME: str = "cifar_10"
-MODEL_REFERENCE: str = "cui_2023"
-ATTACKS_DATASET: str = "cifarnorm10"
+DATASET_NAME: str = "cifar_100"
+MODEL_REFERENCE: str = "rebuffi_2021"
+ATTACKS_DATASET: str = "cifarnorm100"
 
 # noinspection DuplicatedCode
 COMPR_COND_DIM: int = 512
@@ -103,9 +103,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--advfrac",
         type=float,
-        default=0.5,
+        default=0.15,
         metavar="<adversarial_fraction>",
-        help="Fraction of each batch to be adversarially perturbed (default: 0.5)",
+        help="Fraction of each batch to be adversarially perturbed (default: 0.15)",
     )
     return parser.parse_args()
 
@@ -137,7 +137,7 @@ def main_run(args: argparse.Namespace) -> None:
 
     batchsize: int = max(args.batchsize // world_size, 2)
 
-    train_dl, _, _ = cifarten_dataloader_dispatcher(
+    train_dl, _, _ = cifarhundred_dataloader_dispatcher(
         batch_size_train=batchsize,
         batch_size_test=1,
         cuda_accel=True,
@@ -155,7 +155,7 @@ def main_run(args: argparse.Namespace) -> None:
     del _
 
     if args.dist:
-        train_dl, _, _ = cifarten_dataloader_dispatcher(
+        train_dl, _, _ = cifarhundred_dataloader_dispatcher(
             batch_size_train=batchsize,
             batch_size_test=1,
             cuda_accel=True,
@@ -171,9 +171,11 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     # noinspection DuplicatedCode
     vanilla_classifier: WideResNet = WideResNet(
-        10, bn_momentum=0.01, mean=CIFAR10_MEAN, std=CIFAR10_STD
+        100, mean=CIFAR100_MEAN, std=CIFAR100_STD
     )
-    load_model(vanilla_classifier, "../models/cifar10_a3_b10_t4_20m_w.safetensors")
+    load_model(
+        vanilla_classifier, "../models/cifar100_linf_wrn28-10_cutmix_ddpm.safetensors"
+    )
     vanilla_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (
@@ -208,7 +210,7 @@ def main_run(args: argparse.Namespace) -> None:
     carso_machinery: CARSOWrap = CARSOWrap(
         wrapped_model=vanilla_classifier,
         input_preproc=data_prep_dispatcher_3ch(
-            device, post_flatten=False, dataset="cifarten"
+            device, post_flatten=False, dataset="cifarhundred"
         ),
         input_shape=(3, 32, 32),
         repr_layers=full_repr_layers,

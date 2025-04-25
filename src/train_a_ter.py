@@ -37,7 +37,7 @@ from tqdm.auto import trange
 # ──────────────────────────────────────────────────────────────────────────────
 BASE_MODEL_NAME: str = "wrn_28_10"
 DATASET_NAME: str = "cifar_10"
-MODEL_REFERENCE: str = "cui_2023"
+MODEL_REFERENCE: str = "rebuffi_2021"
 ATTACKS_DATASET: str = "cifarnorm10"
 
 # noinspection DuplicatedCode
@@ -170,10 +170,10 @@ def main_run(args: argparse.Namespace) -> None:
         del _
     # ──────────────────────────────────────────────────────────────────────────
     # noinspection DuplicatedCode
-    vanilla_classifier: WideResNet = WideResNet(
-        10, bn_momentum=0.01, mean=CIFAR10_MEAN, std=CIFAR10_STD
+    vanilla_classifier: WideResNet = WideResNet(10, mean=CIFAR10_MEAN, std=CIFAR10_STD)
+    load_model(
+        vanilla_classifier, "../models/cifar10_linf_wrn28-10_cutmix_ddpm_v2.safetensors"
     )
-    load_model(vanilla_classifier, "../models/cifar10_a3_b10_t4_20m_w.safetensors")
     vanilla_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (

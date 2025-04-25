@@ -35,13 +35,16 @@ MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
 SINGLE_GPU_WORKERS: int = 16
 
+# Constant points for the LR schedule
 LR_INIT: float = 5e-6
-LR_STEADY: float = 0.0275
-LR_FINAL: float = 1e-5
+LR_FINAL: float = 1e-4
 
-EP_INIT: int = 40
-EP_STEADY: int = 15
-EP_ANN: int = 145
+# Variable points for the LR schedule
+SCALING_H: float = 1.0
+SCALING_V: float = 1.0
+LR_PEAK: float = 0.045  # 0.035 * SCALING_V
+EP_WU: int = 40  # int(33 * SCALING_H)
+EP_AN: int = 80  # int(66 * SCALING_H)
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -77,9 +80,9 @@ def main_parse() -> argparse.Namespace:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=EP_INIT + EP_STEADY + EP_ANN,
+        default=EP_WU + EP_AN,
         metavar="<epochs>",
-        help=f"Number of epochs to train for (default: {EP_INIT + EP_STEADY + EP_ANN})",
+        help=f"Number of epochs to train for (default: {EP_WU + EP_AN})",
     )
     parser.add_argument(
         "--batchsize",
@@ -203,7 +206,7 @@ def main_run(args: argparse.Namespace) -> None:
     # Optimizer instantiation
     optimizer: Optimizer = SGD(
         params=model.parameters(),
-        lr=LR_STEADY,
+        lr=LR_PEAK,
         momentum=0.9,
         weight_decay=5e-4,
         nesterov=True,
@@ -215,11 +218,11 @@ def main_run(args: argparse.Namespace) -> None:
         optim=optimizer,
         init_lr=LR_INIT,
         final_lr=LR_FINAL,
-        warmup_steps=EP_INIT,
-        steady_lr=LR_STEADY,
-        steady_steps=EP_STEADY,
-        anneal_steps=EP_ANN,
-        cos_warmup=False,
+        warmup_steps=EP_WU,
+        steady_lr=LR_PEAK,
+        steady_steps=0,
+        anneal_steps=EP_AN,
+        cos_warmup=True,
         cos_annealing=True,
     )
 
@@ -235,10 +238,9 @@ def main_run(args: argparse.Namespace) -> None:
                 "epochs": args.epochs,
                 "lr_init": LR_INIT,
                 "lr_final": LR_FINAL,
-                "lr_steady": LR_STEADY,
-                "ep_init": EP_INIT,
-                "ep_steady": EP_STEADY,
-                "ep_anneal": EP_ANN,
+                "lr_peak": LR_PEAK,
+                "ep_warmup": EP_WU,
+                "EP_ANealing": EP_AN,
             },
         )
 

@@ -1,20 +1,19 @@
 #!/usr/bin/bash -li
-#SBATCH --job-name=eval_carso_sc_b_agg
+#SBATCH --job-name=eval_carso_sc_a_bis
 #SBATCH --mail-type=FAIL,END
-#SBATCH --partition=DGX
-#SBATCH --time=0-12:00:00
+#SBATCH --partition=H100
+#SBATCH --time=0-6:00:00
 #SBATCH --nodes=1                   # Nodes
-#SBATCH --ntasks-per-node=7         # GPUs per node
-#SBATCH --cpus-per-task=4          # Cores per node / GPUs per node
-#SBATCH --mem=96G                  # 4 * Cores per node
-#SBATCH --gres=gpu:7                # GPUs per node
+#SBATCH --ntasks-per-node=8         # GPUs per node
+#SBATCH --cpus-per-task=8           # Cores per node / GPUs per node
+#SBATCH --mem=256G                  # 4 * Cores per node
+#SBATCH --gres=gpu:8                # GPUs per node
 ################################################################################
-#
+
 sleep 3
-#
-#source $HOME/.bashrc
-#
-export CODEHOME="$HOME/Downloads/"
+
+export HOME="/u/dssc/s223459/"
+export CODEHOME="$HOME/Downloads/CARSO/src"
 export MYPYTHON="$HOME/pixies/minilit/.pixi/envs/default/bin/python"
 #
 export MASTER_PORT=$(expr 10000 + $(echo -n $SLURM_JOBID | tail -c 4))
@@ -31,17 +30,16 @@ echo "MASTER_PORT="$MASTER_PORT
 echo " "
 #
 ################################################################################
-cd "$CODEHOME/CARSO/src/"
+cd "$CODEHOME"
 #
 echo "-----------------------------------------------------------------------------------------------------------------"
 echo " "
 echo "START TIME "$(date +'%Y_%m_%d-%H_%M_%S')
 echo " "
 echo "-----------------------------------------------------------------------------------------------------------------"
-srun "$MYPYTHON" -O "$CODEHOME/CARSO/src/eval_b.py" --dist --e2e --batchsize 70 --agg "count"
+srun "$MYPYTHON" -O "$CODEHOME/eval_a_ter.py" --dist --e2e --batchsize 80
 echo "-----------------------------------------------------------------------------------------------------------------"
 echo " "
 echo "STOP TIME "$(date +'%Y_%m_%d-%H_%M_%S')
 echo " "
 echo "-----------------------------------------------------------------------------------------------------------------"
-#

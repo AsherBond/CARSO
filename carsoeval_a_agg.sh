@@ -15,7 +15,7 @@ sleep 3
 #source $HOME/.bashrc
 #
 export CODEHOME="$HOME/Downloads/"
-export MYPYTHON="$HOME/micromamba/envs/nightorch/bin/python"
+export MYPYTHON="$HOME/pixies/minilit/.pixi/envs/default/bin/python"
 #
 export MASTER_PORT=$(expr 10000 + $(echo -n $SLURM_JOBID | tail -c 4))
 export WORLD_SIZE=$(($SLURM_NNODES * $SLURM_NTASKS_PER_NODE))
@@ -38,7 +38,7 @@ echo " "
 echo "START TIME "$(date +'%Y_%m_%d-%H_%M_%S')
 echo " "
 echo "-----------------------------------------------------------------------------------------------------------------"
-srun "$MYPYTHON" -O "$CODEHOME/CARSO/src/eval_a.py" --dist --e2e --batchsize 70 --agg "logit"
+srun "$MYPYTHON" -O "$CODEHOME/CARSO/src/eval_a.py" --dist --e2e --batchsize 70 --agg "count"
 echo "-----------------------------------------------------------------------------------------------------------------"
 echo " "
 echo "STOP TIME "$(date +'%Y_%m_%d-%H_%M_%S')
