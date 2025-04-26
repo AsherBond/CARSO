@@ -3,21 +3,21 @@
 # Copyright (c) 2025 Emanuele Ballarin <emanuele@ballarin.cc>
 #
 
-#SBATCH --job-name=train_wrn2810_c10
+#SBATCH --job-name=train_wrn2810_c100
 #SBATCH --mail-user=emanuele@ballarin.cc
 #SBATCH --mail-type=FAIL,END
-#SBATCH --partition=lovelace
-#SBATCH --time=0-10:00:00
+#SBATCH --partition=H100
+#SBATCH --time=0-4:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=18
-#SBATCH --mem=64G
-#SBATCH --gres=gpu:a100:1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=128G
+#SBATCH --gres=gpu:1
 ################################################################################
 
 sleep 3
 
-export HOME="/u/emaballarin/"
+export HOME="/u/dssc/s223459/"
 export CODEHOME="$HOME/Downloads/CARSO/src"
 export MYPYTHON="$HOME/pixies/minilit/.pixi/envs/default/bin/python"
 

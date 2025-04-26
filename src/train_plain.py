@@ -4,6 +4,7 @@
 import argparse
 from typing import Tuple
 
+import composer.functional as cf
 import torch as th
 import torch.distributed as dist
 import torch.nn.functional as F
@@ -33,7 +34,7 @@ from tqdm.auto import trange
 # ──────────────────────────────────────────────────────────────────────────────
 MODEL_NAME: str = "WRN_28_10"
 DATASET_NAME: str = "cifar-"
-SINGLE_GPU_WORKERS: int = 16
+SINGLE_GPU_WORKERS: int = 8
 
 # Constant points for the LR schedule
 LR_INIT: float = 5e-6
@@ -186,9 +187,10 @@ def main_run(args: argparse.Namespace) -> None:
         del _
 
     # Model instantiation
-    model: nn.Module = (
-        WideResNet(num_classes=nclasses, mean=datamean, std=datastd).to(device).train()
-    )
+    model: nn.Module = WideResNet(num_classes=nclasses, mean=datamean, std=datastd)
+    cf.apply_blurpool(model, replace_convs=True, replace_maxpools=True, blur_first=True)
+    model: nn.Module = model.to(device).train()
+
     if args.dist:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model.to(device)
@@ -201,7 +203,9 @@ def main_run(args: argparse.Namespace) -> None:
         model.train()
 
     # Criterion definition
-    criterion = lambda x, y: F.cross_entropy(x, y, reduction="mean")  # noqa: E731
+    criterion = lambda x, y: F.cross_entropy(
+        x, y, reduction="mean", label_smoothing=0.1
+    )
 
     # Optimizer instantiation
     optimizer: Optimizer = SGD(
@@ -268,9 +272,13 @@ def main_run(args: argparse.Namespace) -> None:
         ):
             batched_x: Tensor = batched_x.to(device)
             batched_y: Tensor = batched_y.to(device)
+            #
+            batched_xm, batched_yp, mixing = cf.mixup_batch(batched_x, batched_y)
             optimizer.zero_grad()
-            batched_yhat: Tensor = model(batched_x)
-            unsc_loss: Tensor = criterion(batched_yhat, batched_y)
+            batched_yhat: Tensor = model(batched_xm)
+            unsc_loss: Tensor = (1 - mixing) * criterion(
+                batched_yhat, batched_y
+            ) + mixing * criterion(batched_yhat, batched_yp)
             loss = unsc_loss * world_size  # DDP averages .grad, compute sum!
             loss.backward()
             optimizer.step()
