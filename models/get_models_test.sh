@@ -9,6 +9,8 @@ curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_100_rebuffiwrn2810/
 curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/tinyimagenet_wangwrn2810/models/tiny_linf_wrn28_10_w.safetensors
 curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_10_ownwrn2810/WRN_28_10_cifar10_09428.safetensors
 curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_100_ownwrn2810/WRN_28_10_cifar100_07476.safetensors
+curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_10_ownwrn2810/WRN_28_10_cifar10_09505.safetensors
+curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_100_ownwrn2810/WRN_28_10_cifar100_07878.safetensors
 
 curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_10_cuiwrn2810/models/wrn_28_10_cifar_10_cui_2023_repr_compressors.safetensors
 curl -O https://bucket.ballarin.cc/aimldl/carso2024cnn/cifar_10_cuiwrn2810/models/wrn_28_10_cifar_10_cui_2023_repr_fcn_compressor.safetensors

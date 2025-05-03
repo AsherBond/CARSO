@@ -277,7 +277,7 @@ def main_run(args: argparse.Namespace) -> None:
                 "adversarial_fraction": args.advfrac,
                 "loss_function": "Pixelwise BCE (reduction: sum)",
                 "optimizer": f"RAdam + Lookahead ({LAH_STEPS} steps)",
-                "lr_scheduler": f"Linear Warmup ({INIT_LR} to {complbr}, in {eup} epochs) + Flat ({complbr}, for {efl} epochs) + Linear Anneal ({complbr} to {compflr}, in {ean} epochs)",
+                "lr_scheduler": f"Linear Warmup ({INIT_LR} to {complbr}, in {eup} epochs) + Flat ({complbr}, for {efl} epochs) + Linear Anneal ({complbr} to {compflr}, in {ean} epochs)",  # noqa: E501
             },
         )
     # ──────────────────────────────────────────────────────────────────────────

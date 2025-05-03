@@ -3,6 +3,7 @@ advertorch>=0.2.4    # From: https://github.com/BorealisAI/advertorch.git@master
 autoattack>=0.1      # From: https://github.com/fra31/auto-attack.git@master
 ebtorch>=0.32
 mosaicml>=0.30
+mosaicml>=0.30
 safe-assert>=0.5
 safetensors>=0.4.3
 torch>=2.2.2

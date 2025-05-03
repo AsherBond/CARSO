@@ -162,6 +162,7 @@ def main_run(args: argparse.Namespace) -> None:
         adversarial_classifier,
         "../models/cifar100_linf_wrn28-10_cutmix_ddpm.safetensors",
     )
+    # noinspection DuplicatedCode
     adversarial_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (

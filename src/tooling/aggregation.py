@@ -18,7 +18,6 @@ __all__: List[str] = ["select_aggregation"]
 
 
 def _count_aggregation(x: Tensor) -> Tensor:
-    # return x.floor_divide(x.max(-2, keepdim=True)[0]).sum(-1)
     return th.floor(th.divide(x, x.max(-2, keepdim=True)[0])).sum(-1)
 
 

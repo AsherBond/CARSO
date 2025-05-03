@@ -38,6 +38,7 @@ from tqdm.auto import trange
 BASE_MODEL_NAME: str = "wrn_28_10"
 DATASET_NAME: str = "cifar_10"
 MODEL_REFERENCE: str = "own_2025"
+# noinspection DuplicatedCode
 ATTACKS_DATASET: str = "cifarnorm10"
 
 # noinspection DuplicatedCode
@@ -171,6 +172,7 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     # noinspection DuplicatedCode
     vanilla_classifier: WideResNet = WideResNet(10, mean=CIFAR10_MEAN, std=CIFAR10_STD)
+    # noinspection DuplicatedCode
     load_model(vanilla_classifier, "../models/WRN_28_10_cifar10_09428.safetensors")
     vanilla_classifier.to(device).eval()
 
@@ -203,6 +205,7 @@ def main_run(args: argparse.Namespace) -> None:
         "layer.2.block.3.conv_1",
     )
 
+    # noinspection DuplicatedCode
     carso_machinery: CARSOWrap = CARSOWrap(
         wrapped_model=vanilla_classifier,
         input_preproc=data_prep_dispatcher_3ch(
@@ -273,7 +276,7 @@ def main_run(args: argparse.Namespace) -> None:
                 "adversarial_fraction": args.advfrac,
                 "loss_function": "Pixelwise BCE (reduction: sum)",
                 "optimizer": f"RAdam + Lookahead ({LAH_STEPS} steps)",
-                "lr_scheduler": f"Linear Warmup ({INIT_LR} to {complbr}, in {eup} epochs) + Flat ({complbr}, for {efl} epochs) + Linear Anneal ({complbr} to {compflr}, in {ean} epochs)",
+                "lr_scheduler": f"Linear Warmup ({INIT_LR} to {complbr}, in {eup} epochs) + Flat ({complbr}, for {efl} epochs) + Linear Anneal ({complbr} to {compflr}, in {ean} epochs)",  # noqa: E501
             },
         )
     # ──────────────────────────────────────────────────────────────────────────

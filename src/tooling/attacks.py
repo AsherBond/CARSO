@@ -123,6 +123,7 @@ def attacks_dispatcher(
             )
         )
 
+    # noinspection DuplicatedCode
     if fgsm and weak:
         adversaries.append(
             GradientSignAttack(
@@ -159,6 +160,7 @@ def attacks_dispatcher(
             )
         )
 
+    # noinspection DuplicatedCode
     if deepfool and weak:
         adversaries.append(
             DeepfoolLinfAttack(

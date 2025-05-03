@@ -9,6 +9,7 @@ import argparse
 from typing import Tuple
 
 import autoattack as aatk
+import composer.functional as cf
 import torch as th
 import torch.distributed as dist
 from carso import CARSOWrap
@@ -25,9 +26,10 @@ from tqdm.auto import tqdm
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# noinspection DuplicatedCode
 BASE_MODEL_NAME: str = "wrn_28_10"
 DATASET_NAME: str = "cifar_100"
-MODEL_REFERENCE: str = "cui_2023"
+MODEL_REFERENCE: str = "own_2025"
 
 # noinspection DuplicatedCode
 COMPR_COND_DIM: int = 512
@@ -156,10 +158,17 @@ def main_run(args: argparse.Namespace) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     # noinspection DuplicatedCode
     adversarial_classifier: WideResNet = WideResNet(
+        100, mean=CIFAR100_MEAN, std=CIFAR100_STD
+    )
+    load_model(adversarial_classifier, "../models/WRN_28_10_cifar100_07476.safetensors")
+    adversarial_classifier.to(device).eval()
+
+    # noinspection DuplicatedCode
+    final_classifier: WideResNet = WideResNet(
         100, bn_momentum=0.01, mean=CIFAR100_MEAN, std=CIFAR100_STD
     )
-    load_model(adversarial_classifier, "../models/cifar100_a5_b12_t4_50m_w.safetensors")
-    adversarial_classifier.to(device).eval()
+    load_model(final_classifier, "../models/cifar100_a5_b12_t4_50m_w.safetensors")
+    final_classifier.to(device).eval()
 
     full_repr_layers: Tuple[str, ...] = (
         "layer.0.block.0.conv_0",
@@ -203,6 +212,7 @@ def main_run(args: argparse.Namespace) -> None:
         ensemble_size=args.nsamples,
         differentiable_infer=args.e2e,
         agg_method=args.agg,
+        classif_replacement=final_classifier,
     )
 
     # noinspection DuplicatedCode

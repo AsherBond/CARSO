@@ -160,6 +160,7 @@ def main_run(args: argparse.Namespace) -> None:
     adversarial_classifier: WideResNet = WideResNet(
         10, mean=CIFAR10_MEAN, std=CIFAR10_STD
     )
+    # noinspection DuplicatedCode
     load_model(adversarial_classifier, "../models/WRN_28_10_cifar10_09428.safetensors")
     adversarial_classifier.to(device).eval()
 
@@ -192,6 +193,7 @@ def main_run(args: argparse.Namespace) -> None:
         "layer.2.block.3.conv_1",
     )
 
+    # noinspection DuplicatedCode
     carso_machinery: CARSOWrap = CARSOWrap(
         wrapped_model=adversarial_classifier,
         input_preproc=data_prep_dispatcher_3ch(

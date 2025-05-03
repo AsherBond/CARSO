@@ -192,6 +192,7 @@ def main_run(args: argparse.Namespace) -> None:
         "layer.2.block.3.conv_1",
     )
 
+    # noinspection DuplicatedCode
     carso_machinery: CARSOWrap = CARSOWrap(
         wrapped_model=adversarial_classifier,
         input_preproc=data_prep_dispatcher_3ch(

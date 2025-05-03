@@ -9,6 +9,7 @@ import argparse
 from typing import Tuple
 
 import autoattack as aatk
+import composer.functional as cf
 import torch as th
 import torch.distributed as dist
 from carso import CARSOWrap
@@ -25,6 +26,7 @@ from tqdm.auto import tqdm
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# noinspection DuplicatedCode
 BASE_MODEL_NAME: str = "wrn_28_10"
 DATASET_NAME: str = "cifar_100"
 MODEL_REFERENCE: str = "cui_2023"
@@ -41,8 +43,10 @@ BSAR: float = 1
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+
+
+# noinspection DuplicatedCode
 def main_parse() -> argparse.Namespace:
-    # noinspection DuplicatedCode
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=f"{BASE_MODEL_NAME}+CARSO on {DATASET_NAME} Testing"
     )
@@ -161,6 +165,11 @@ def main_run(args: argparse.Namespace) -> None:
     load_model(adversarial_classifier, "../models/cifar100_a5_b12_t4_50m_w.safetensors")
     adversarial_classifier.to(device).eval()
 
+    # noinspection DuplicatedCode
+    final_classifier: WideResNet = WideResNet(100, mean=CIFAR100_MEAN, std=CIFAR100_STD)
+    load_model(final_classifier, "../models/WRN_28_10_cifar100_07476.safetensors")
+    final_classifier.to(device).eval()
+
     full_repr_layers: Tuple[str, ...] = (
         "layer.0.block.0.conv_0",
         "layer.0.block.0.conv_1",
@@ -203,6 +212,7 @@ def main_run(args: argparse.Namespace) -> None:
         ensemble_size=args.nsamples,
         differentiable_infer=args.e2e,
         agg_method=args.agg,
+        classif_replacement=final_classifier,
     )
 
     # noinspection DuplicatedCode

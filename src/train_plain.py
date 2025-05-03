@@ -203,7 +203,7 @@ def main_run(args: argparse.Namespace) -> None:
         model.train()
 
     # Criterion definition
-    criterion = lambda x, y: F.cross_entropy(
+    criterion = lambda x, y: F.cross_entropy(  # noqa: E731
         x, y, reduction="mean", label_smoothing=0.1
     )
 
@@ -228,6 +228,7 @@ def main_run(args: argparse.Namespace) -> None:
         anneal_steps=EP_AN,
         cos_warmup=True,
         cos_annealing=True,
+        step_dilation=len(train_dl),
     )
 
     # Wandb initialization
@@ -283,7 +284,7 @@ def main_run(args: argparse.Namespace) -> None:
             loss.backward()
             optimizer.step()
 
-        scheduler.step()
+            scheduler.step()
 
         # Evaluation
         testacc: float = eval_model_on_test(

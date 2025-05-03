@@ -12,11 +12,13 @@ from itertools import chain
 from math import ceil
 from math import prod as mult
 from typing import List
+from typing import Optional
 from typing import Tuple
 from typing import TypeVar
 from typing import Union
 
 import torch as th
+from composer.functional import apply_blurpool
 from ebtorch.nn import DuplexLinearNeck
 from ebtorch.nn import GaussianReparameterizerSampler
 from ebtorch.nn.utils import gather_model_repr
@@ -54,6 +56,8 @@ class CARSOWrap(nn.Module):
         ensemble_size: int,
         differentiable_infer: bool = False,
         agg_method: str = "peel",
+        blurpool: bool = False,
+        classif_replacement: Optional[nn.Module] = None,
     ) -> None:
 
         # Validate arguments
@@ -115,9 +119,17 @@ class CARSOWrap(nn.Module):
         # Wrapped models
         # ─────────────────────────────────────────────────────
         self.wrapped_model: nn.Module = deepcopy(wrapped_model)
-        self.wrapped_model_final: nn.Module = (
-            deepcopy(wrapped_model) if differentiable_infer else self.wrapped_model
-        )
+
+        if classif_replacement is not None:
+            self.wrapped_model_final: nn.Module = (
+                deepcopy(classif_replacement)
+                if differentiable_infer
+                else classif_replacement
+            )
+        else:
+            self.wrapped_model_final: nn.Module = (
+                deepcopy(wrapped_model) if differentiable_infer else self.wrapped_model
+            )
         self.input_preproc: nn.Module = deepcopy(input_preproc)
         # ─────────────────────────────────────────────────────
         self.wrapped_model.eval()
@@ -157,6 +169,12 @@ class CARSOWrap(nn.Module):
 
         # Cleanup
         del repr_shapes, pre_fcn_repr_size, compr_input_size, pre_fcn_joint_size
+
+        # Eventually apply blurpool surgery
+        if blurpool:
+            apply_blurpool(self.input_compressor, min_channels=4)
+            apply_blurpool(self.repr_compressors, min_channels=0)
+            apply_blurpool(self.decoder, min_channels=0)
 
         # ──────────────────────────────────────────────────────────────────────
         # Inference setup
