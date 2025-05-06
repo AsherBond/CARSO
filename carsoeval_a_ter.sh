@@ -1,5 +1,5 @@
 #!/usr/bin/bash -li
-#SBATCH --job-name=eval_carso_sc_a_bis
+#SBATCH --job-name=eval_carso_sc_a_ter
 #SBATCH --mail-type=FAIL,END
 #SBATCH --partition=H100
 #SBATCH --time=0-6:00:00

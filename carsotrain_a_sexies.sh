@@ -1,21 +1,21 @@
 #!/usr/bin/bash -li
-#SBATCH --job-name=train_carso_sc_b_bis
+#SBATCH --job-name=train_carso_sc_a_sexies
 #SBATCH --mail-type=FAIL,END
 #SBATCH --partition=DGX
 #SBATCH --time=0-04:00:00
 #SBATCH --nodes=1                   # Nodes
-#SBATCH --ntasks-per-node=4         # GPUs per node
-#SBATCH --cpus-per-task=24          # Cores per node / GPUs per node
+#SBATCH --ntasks-per-node=8         # GPUs per node
+#SBATCH --cpus-per-task=8           # Cores per node / GPUs per node
 #SBATCH --mem=256G                  # 4 * Cores per node
-#SBATCH --gres=gpu:4                # GPUs per node
+#SBATCH --gres=gpu:8                # GPUs per node
 ################################################################################
-#
+
 sleep 3
 
 export HOME="/u/dssc/s223459/"
 export CODEHOME="$HOME/Downloads/CARSO/src"
 export MYPYTHON="$HOME/pixies/minilit/.pixi/envs/default/bin/python"
-
+#
 export MASTER_PORT=$(expr 10000 + $(echo -n $SLURM_JOBID | tail -c 4))
 export WORLD_SIZE=$(($SLURM_NNODES * $SLURM_NTASKS_PER_NODE))
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
@@ -37,7 +37,7 @@ echo " "
 echo "START TIME "$(date +'%Y_%m_%d-%H_%M_%S')
 echo " "
 echo "-----------------------------------------------------------------------------------------------------------------"
-srun "$MYPYTHON" -O "$CODEHOME/train_b_bis.py" --dist --save --wandb --batchsize 2560
+srun "$MYPYTHON" -O "$CODEHOME/train_a_sexies.py" --dist --save --wandb
 echo "-----------------------------------------------------------------------------------------------------------------"
 echo " "
 echo "STOP TIME "$(date +'%Y_%m_%d-%H_%M_%S')

@@ -1,8 +1,4 @@
 #!/usr/bin/bash -li
-#
-# Copyright (c) 2025 Emanuele Ballarin <emanuele@ballarin.cc>
-#
-
 #SBATCH --job-name=train_wrn2810_c100
 #SBATCH --mail-user=emanuele@ballarin.cc
 #SBATCH --mail-type=FAIL,END

@@ -1,5 +1,5 @@
 #!/usr/bin/bash -li
-#SBATCH --job-name=train_carso_sc_a_bis
+#SBATCH --job-name=train_carso_sc_a_ter
 #SBATCH --mail-type=FAIL,END
 #SBATCH --partition=DGX
 #SBATCH --time=0-04:00:00
